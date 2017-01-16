@@ -12,7 +12,7 @@ script depending on your use case.
 
 EXAMPLE:
 
-<pre>
+```
 // This example runs for ever and should always give output every second.
 package main
 
@@ -39,4 +39,4 @@ func main() {
 func trigger(num int) {
 	fmt.Printf("You have %v file descriptors open.\n", num)
 }
-</pre>
+```
