@@ -20,63 +20,60 @@
 
 // TODO: comment tests
 
-// Test file for package fd
+// Test file for package fd. fd works by triggering a function when we exceed a
+// pre-defined number of open file descriptors. Because fd needs to run for a
+// few seconds before the function is run, the test will take that into
+// account. Code from user helmbert on stackoverflow.
 package fd
 
 import (
-	"os"
 	"testing"
 	"time"
 
 	"gitlab.com/sigma7/fd"
 )
 
-var a bool
-var b bool
-
-func TestFdRun(t *testing.T) {
-	ticker2 := time.NewTicker(time.Second * 5)
-	for _ = range ticker2.C {
-		fiveSecondExit()
+// Test to make sure the function runs when we exceed the maximum number of
+// file descriptors.
+func TestFd(t *testing.T) {
+	functionCalled := make(chan bool)
+	timeoutSeconds := 2 * time.Second
+	trigger := func(i int) {
+		functionCalled <- true
 	}
 
-	ticker := time.NewTicker(time.Second * 3)
-	f := &fd.Fdcount{Interval: 1, MaxFiles: 4}
-	f.Start(trigger)
-	a = false
-	for _ = range ticker.C {
-		if !a {
-			t.Error("Error function failed to run")
-			t.FailNow()
-		} else {
-			// do something?
-		}
-	}
-}
+	timeout := time.After(timeoutSeconds)
 
-func TestFdDoesNotRun(t *testing.T) {
-	ticker := time.NewTicker(time.Second * 3)
-	f := &fd.Fdcount{Interval: 1, MaxFiles: 60000}
-	f.Start(trigger)
-	b = false
-	for _ = range ticker.C {
-		if !b {
-			// ???
-		} else {
-			t.Error("Error function failed to run")
-			t.FailNow()
-		}
+	// Change MaxFiles to a high number (more than 9 usually) to make this fail.
+	c := &fd.Fdcount{Interval: 1, MaxFiles: 1}
+	c.Start(trigger)
+
+	select {
+	case <-functionCalled:
+		t.Logf("function was called")
+	case <-timeout:
+		t.Fatalf("function was not called within timeout")
 	}
 }
 
-func trigger(num int) {
-	a = true
-}
+// Test to make sure the function doesn't run for no reason.
+func TestFdNoRun(t *testing.T) {
+	functionCalled := make(chan bool)
+	timeoutSeconds := 2 * time.Second
+	trigger := func(i int) {
+		functionCalled <- true
+	}
 
-func trigger2(num int) {
-	b = true
-}
+	timeout := time.After(timeoutSeconds)
 
-func fiveSecondExit() {
-	os.Exit(0)
+	// Change MaxFiles to a low number (less than 9 usually) to make this fail.
+	c := &fd.Fdcount{Interval: 1, MaxFiles: 5000}
+	c.Start(trigger)
+
+	select {
+	case <-functionCalled:
+		t.Fatalf("function was called when it wasn't supposed to be.")
+	case <-timeout:
+		t.Logf("function was called")
+	}
 }
