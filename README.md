@@ -19,7 +19,7 @@ package main
 import (
 	"fmt"
 
-	"gitlab.com/zfeldt/fd"
+	"gitlab.com/hartsfield/fd"
 )
 
 func main() {

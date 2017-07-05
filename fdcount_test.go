@@ -1,4 +1,4 @@
-// Copyright 2017 J. Hartzfeldt
+// Copyright 2017 J. Hartsfield
 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	"gitlab.com/sigma7/fd"
+	"gitlab.com/hartsfield/fd"
 )
 
 // Test to make sure the function runs when we exceed the maximum number of
